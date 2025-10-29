@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LinkedIn Job Tracker - Settings</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f3f6f8;
+    }
+
+    .container {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #0a66c2;
+      margin: 0 0 24px 0;
+      font-size: 24px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    h2 {
+      font-size: 16px;
+      color: #333;
+      margin: 0 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #0a66c2;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #0a66c2;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .button {
+      padding: 12px 24px;
+      background: #0a66c2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background: #004182;
+    }
+
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #0a66c2;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #0a66c2;
+    }
+
+    .info-box a {
+      color: #0a66c2;
+      text-decoration: none;
+    }
+
+    .info-box a:hover {
+      text-decoration: underline;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .current-config {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .current-config h3 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .current-config ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .current-config li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Settings</h1>
+
+    <div class="section">
+      <h2>Current Configuration</h2>
+      <div class="current-config">
+        <h3>Keywords:</h3>
+        <ul>
+          <li>Senior Product Manager</li>
+          <li>Product Ops</li>
+          <li>Head of Staff</li>
+        </ul>
+        <h3 style="margin-top: 12px;">Location:</h3>
+        <ul>
+          <li>Berlin / Germany (Remote & Hybrid)</li>
+        </ul>
+        <h3 style="margin-top: 12px;">Check Interval:</h3>
+        <ul>
+          <li>Every 20 minutes</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Telegram Notifications</h2>
+
+      <div class="info-box">
+        <strong>How to set up Telegram notifications:</strong>
+        1. Message <a href="https://t.me/botfather" target="_blank">@BotFather</a> on Telegram and create a bot<br>
+        2. Copy the bot token and paste below<br>
+        3. Start a chat with your bot and send any message<br>
+        4. Visit: <code>https://api.telegram.org/bot{YOUR_TOKEN}/getUpdates</code><br>
+        5. Find your chat_id in the response and paste below
+      </div>
+
+      <div class="form-group">
+        <label for="telegramToken">Bot Token</label>
+        <input type="password" id="telegramToken" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+        <div class="help-text">Your Telegram bot token from @BotFather</div>
+      </div>
+
+      <div class="form-group">
+        <label for="telegramChatId">Chat ID</label>
+        <input type="text" id="telegramChatId" placeholder="123456789">
+        <div class="help-text">Your Telegram chat ID (usually starts with your user ID)</div>
+      </div>
+
+      <button id="saveTelegram" class="button">Save Telegram Settings</button>
+      <div id="successMessage" class="success-message">Settings saved successfully!</div>
+    </div>
+
+    <div class="section">
+      <h2>Manage Tracked Jobs</h2>
+      <div class="info-box">
+        <strong>Clear History:</strong>
+        This will reset the list of seen jobs. You'll receive notifications for all matching jobs again on the next check.
+      </div>
+      <button id="clearHistory" class="button">Clear Job History</button>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
