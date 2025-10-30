@@ -10,7 +10,6 @@ const CONFIG = {
   ],
   locations: [
     'Germany',
-    'United Kingdom',
     'Netherlands',
     'Ireland',
     'Sweden',
