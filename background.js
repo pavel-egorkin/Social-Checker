@@ -5,13 +5,27 @@ const ALARM_NAME = 'jobCheck';
 // Job search configuration
 const CONFIG = {
   keywords: [
-    'Senior Product Manager',
-    'Product Ops',
-    'Head of Staff'
+    'Product Manager',
+    'Product Owner'
   ],
-  locations: ['Berlin', 'Germany'],
-  experienceLevels: ['Senior level', 'Executive', 'Director'],
-  remoteOptions: ['Remote', 'Hybrid']
+  locations: [
+    'Germany',
+    'United Kingdom',
+    'Netherlands',
+    'Ireland',
+    'Sweden',
+    'Denmark',
+    'Estonia'
+  ],
+  experienceLevels: ['Mid-Senior level', 'Senior level'],
+  workTypes: ['Remote', 'Hybrid', 'On-site'],
+  excludeKeywords: [
+    'fluent German',
+    'native German',
+    'German required',
+    'Deutsch',
+    'C1 German'
+  ]
 };
 
 // Initialize extension
@@ -70,7 +84,7 @@ async function checkLinkedInJobs() {
     console.log('Checking LinkedIn jobs...');
 
     // Build LinkedIn search URL
-    const searchUrl = buildSearchUrl();
+    const searchUrl = await buildSearchUrl();
     console.log('Search URL:', searchUrl);
 
     // Open LinkedIn in a new tab (hidden approach)
@@ -106,13 +120,23 @@ async function checkLinkedInJobs() {
   }
 }
 
-// Build LinkedIn search URL
-function buildSearchUrl() {
+// Build LinkedIn search URL with rotating location
+async function buildSearchUrl() {
   const baseUrl = 'https://www.linkedin.com/jobs/search/';
+
+  // Get current location index from storage and rotate
+  const { locationIndex = 0 } = await chrome.storage.local.get('locationIndex');
+  const currentLocation = CONFIG.locations[locationIndex];
+  const nextIndex = (locationIndex + 1) % CONFIG.locations.length;
+  await chrome.storage.local.set({ locationIndex: nextIndex });
+
+  console.log(`Searching in: ${currentLocation} (${locationIndex + 1}/${CONFIG.locations.length})`);
+
   const params = new URLSearchParams({
     keywords: CONFIG.keywords.join(' OR '),
-    location: 'Germany',
-    f_WT: '2,3', // Remote and Hybrid
+    location: currentLocation,
+    f_WT: '1,2,3', // On-site, Remote, and Hybrid
+    f_E: '3,4', // Mid-Senior level (3) and Senior level (4)
     f_TPR: 'r86400', // Posted in last 24 hours
     sortBy: 'DD' // Sort by date (most recent first)
   });
@@ -140,6 +164,9 @@ function extractJobsFromPage() {
       // Try multiple location selectors
       const locationElement = card.querySelector('.job-card-container__metadata-item, .artdeco-entity-lockup__caption, .job-card-container__metadata-wrapper');
 
+      // Try to get job description snippet if available
+      const descriptionElement = card.querySelector('.job-card-list__entity-lockup, .base-search-card__metadata, [class*="job-card-container__job-insight"]');
+
       // Link element - could be the title itself or a separate link
       const linkElement = titleElement || card.querySelector('a[href*="/jobs/view/"], a.job-card-container__link');
 
@@ -163,6 +190,7 @@ function extractJobsFromPage() {
           title: (titleElement?.textContent || linkElement.textContent || 'Unknown').trim(),
           company: companyElement?.textContent.trim() || 'Unknown',
           location: locationElement?.textContent.trim() || 'Unknown',
+          description: descriptionElement?.textContent.trim() || '',
           url: linkElement.href.split('?')[0],
           postedDate: timeElement?.getAttribute('datetime') || new Date().toISOString(),
           extractedAt: new Date().toISOString()
@@ -186,11 +214,27 @@ async function processJobs(jobs) {
     return;
   }
 
+  // Filter out jobs with exclusion keywords
+  const filteredJobs = jobs.filter(job => {
+    const searchText = `${job.title} ${job.company} ${job.location} ${job.description}`.toLowerCase();
+    const hasExcludedKeyword = CONFIG.excludeKeywords.some(keyword =>
+      searchText.includes(keyword.toLowerCase())
+    );
+
+    if (hasExcludedKeyword) {
+      console.log(`Excluded job: ${job.title} (contains German requirement)`);
+      return false;
+    }
+    return true;
+  });
+
+  console.log(`${filteredJobs.length} jobs after exclusion filtering (removed ${jobs.length - filteredJobs.length})`);
+
   // Get seen jobs from storage
   const { seenJobs = [], seenJobDetails = [] } = await chrome.storage.local.get(['seenJobs', 'seenJobDetails']);
 
   // Filter new jobs
-  const newJobs = jobs.filter(job => !seenJobs.includes(job.id));
+  const newJobs = filteredJobs.filter(job => !seenJobs.includes(job.id));
 
   console.log(`${newJobs.length} new jobs found`);
 

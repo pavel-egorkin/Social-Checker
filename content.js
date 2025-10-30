@@ -13,6 +13,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function extractJobs() {
   const jobs = [];
+  const seenJobIds = new Set();
 
   // LinkedIn job card selectors - updated for current LinkedIn UI (2025)
   // Try multiple selectors as LinkedIn UI changes frequently
@@ -42,6 +43,12 @@ function extractJobs() {
                       href.match(/\/view\/(\d+)/)?.[1] ||
                       href.match(/currentJobId=(\d+)/)?.[1] ||
                       href;
+
+        // Skip if we've already seen this job ID in this extraction
+        if (seenJobIds.has(jobId)) {
+          return;
+        }
+        seenJobIds.add(jobId);
 
         const job = {
           id: jobId,
