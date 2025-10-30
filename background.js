@@ -1,5 +1,5 @@
 // Configuration
-const CHECK_INTERVAL = 20; // minutes
+const CHECK_INTERVAL = 10; // minutes
 const ALARM_NAME = 'jobCheck';
 
 // Job search configuration
@@ -123,6 +123,7 @@ function buildSearchUrl() {
 // Function that runs in the page context to extract jobs
 function extractJobsFromPage() {
   const jobs = [];
+  const seenJobIds = new Set();
 
   // LinkedIn job card selectors - updated for current LinkedIn UI (2025)
   // Try multiple selectors as LinkedIn UI changes frequently
@@ -150,6 +151,12 @@ function extractJobsFromPage() {
                       linkElement.href.match(/\/view\/(\d+)/)?.[1] ||
                       linkElement.href.match(/currentJobId=(\d+)/)?.[1] ||
                       linkElement.href;
+
+        // Skip if we've already seen this job ID in this extraction
+        if (seenJobIds.has(jobId)) {
+          return;
+        }
+        seenJobIds.add(jobId);
 
         const job = {
           id: jobId,
