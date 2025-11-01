@@ -9,9 +9,9 @@ const CONFIG = {
     'Product Owner'
   ],
   locations: [
+    'Berlin',
     'Germany',
     'Netherlands',
-    'Ireland',
     'Sweden',
     'Denmark',
     'Estonia'
@@ -80,6 +80,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Main function to check LinkedIn jobs
 async function checkLinkedInJobs() {
   try {
+    // Check if current time is within allowed hours
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const hour = now.getHours();
+
+    // Skip on weekends (Saturday = 6, Sunday = 0)
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      console.log('Skipping job check: Weekend');
+      return;
+    }
+
+    // Skip outside working hours (before 7:00 or after 20:00)
+    if (hour < 7 || hour >= 20) {
+      console.log(`Skipping job check: Outside working hours (current hour: ${hour})`);
+      return;
+    }
+
     console.log('Checking LinkedIn jobs...');
 
     // Build LinkedIn search URL
@@ -131,10 +148,15 @@ async function buildSearchUrl() {
 
   console.log(`Searching in: ${currentLocation} (${locationIndex + 1}/${CONFIG.locations.length})`);
 
+  // Set work type filter based on location
+  // Berlin: On-site only (1)
+  // All others: Remote (2) and Hybrid (3) only
+  const workTypeFilter = currentLocation === 'Berlin' ? '1' : '2,3';
+
   const params = new URLSearchParams({
     keywords: CONFIG.keywords.join(' OR '),
     location: currentLocation,
-    f_WT: '1,2,3', // On-site, Remote, and Hybrid
+    f_WT: workTypeFilter,
     f_E: '3,4', // Mid-Senior level (3) and Senior level (4)
     f_TPR: 'r86400', // Posted in last 24 hours
     sortBy: 'DD' // Sort by date (most recent first)
